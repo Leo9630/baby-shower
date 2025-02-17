@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Shower de Belén</title>
+    <style>
+        body {
+            background: #DFF0D8;
+            position: relative;
+            font-family: 'Arial', sans-serif;
+            color: #4A6636;
+            text-align: center;
+            overflow: hidden;
+        }
+        .stars-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('e56a323f548f6b622eb095b48e86d5dd.gif') repeat;
+            background-size: cover;
+            z-index: -1;
+        }
+        table {
+            margin: 50px auto;
+            border-collapse: collapse;
+            width: 80%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #4A6636;
+            padding: 10px;
+            text-align: center;
+        }
+        button {
+            background-color: #4A6636;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-background"></div>
+    <h1>Lista de Regalos</h1>
+    <table id="giftTable">
+        <thead>
+            <tr>
+                <th>Núcleo Familiar</th>
+                <th>Ver Regalo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Se llenará dinámicamente con JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const sheetURL = "https://script.google.com/macros/s/AKfycbwwlysvJYb1Q_COaj6Ai7n0MrxyPly-RqDDd9NQYSuqPtcpuxmSPUwE02jFNWgdYT0y/exec";
+
+        fetch(sheetURL)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Datos recibidos:", data); // Verifica que los datos lleguen bien
+
+                const tableBody = document.querySelector("#giftTable tbody");
+                tableBody.innerHTML = "";
+
+                data.forEach(row => {
+                    if (!row.nombre || row.codigo === undefined || !row.regalo || !row.link) {
+                        console.warn("Fila con datos incompletos:", row);
+                        return;
+                    }
+
+                    let tr = document.createElement("tr");
+                    let tdName = document.createElement("td");
+                    let tdButton = document.createElement("td");
+                    let button = document.createElement("button");
+
+                    tdName.textContent = row.nombre;
+                    button.textContent = "Ver Regalo";
+
+                    button.onclick = () => {
+                        let codigoIngresado = prompt("Ingrese su código secreto:");
+
+                        // Convertimos el código ingresado a número para compararlo correctamente
+                        if (parseInt(codigoIngresado) === row.codigo) {
+                            // Crear un contenedor HTML para mostrar un mensaje con el link clickeable
+                            let mensaje = document.createElement("div");
+                            mensaje.innerHTML = `<p>🎁 Tu regalo es: <strong>${row.regalo}</strong></p>
+                                                 <p>🔗 <a href="${row.link}" target="_blank" style="color: blue; text-decoration: underline;">Ver opciones de compra</a></p>`;
+
+                            // Mostrar el mensaje en una ventana emergente
+                            let ventana = window.open("", "Regalo", "width=400,height=250");
+                            ventana.document.body.appendChild(mensaje);
+                        } else {
+                            alert("❌ Código incorrecto. Inténtelo de nuevo.");
+                        }
+                    };
+
+                    tdButton.appendChild(button);
+                    tr.appendChild(tdName);
+                    tr.appendChild(tdButton);
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error("Error al cargar los datos:", error));
+    </script>
+</body>
+</html>
+
