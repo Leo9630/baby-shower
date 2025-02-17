@@ -7,11 +7,12 @@
     <style>
         body {
             background: #DFF0D8;
-            position: relative;
             font-family: 'Arial', sans-serif;
             color: #4A6636;
             text-align: center;
-            overflow: hidden;
+            overflow-y: auto;
+            margin: 0;
+            height: 100vh;
         }
         .stars-background {
             position: fixed;
@@ -39,13 +40,42 @@
         button {
             background-color: #4A6636;
             color: white;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
+            font-size: 14px;
         }
-        .hidden {
+        .gift-box {
             display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #DFF0D8;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+        .gift-box h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .gift-box p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .gift-box a {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #4A6636;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -64,23 +94,23 @@
         </tbody>
     </table>
 
+    <!-- Cuadro emergente con la información del regalo -->
+    <div class="gift-box" id="giftBox">
+        <h2 id="giftTitle"></h2>
+        <p id="giftText"></p>
+        <a id="giftLink" target="_blank">🔗 LINK OPCIÓN DE COMPRA</a>
+        <br><br>
+        <button onclick="closeGiftBox()">Cerrar</button>
+    </div>
+
     <script>
         const sheetURL = "https://script.google.com/macros/s/AKfycbwwlysvJYb1Q_COaj6Ai7n0MrxyPly-RqDDd9NQYSuqPtcpuxmSPUwE02jFNWgdYT0y/exec";
 
         fetch(sheetURL)
             .then(response => response.json())
             .then(data => {
-                console.log("Datos recibidos:", data); // Verifica que los datos lleguen bien
-
                 const tableBody = document.querySelector("#giftTable tbody");
-                tableBody.innerHTML = "";
-
                 data.forEach(row => {
-                    if (!row.nombre || row.codigo === undefined || !row.regalo || !row.link) {
-                        console.warn("Fila con datos incompletos:", row);
-                        return;
-                    }
-
                     let tr = document.createElement("tr");
                     let tdName = document.createElement("td");
                     let tdButton = document.createElement("td");
@@ -88,22 +118,12 @@
 
                     tdName.textContent = row.nombre;
                     button.textContent = "Ver Regalo";
-
                     button.onclick = () => {
-                        let codigoIngresado = prompt("Ingrese su código secreto:");
-
-                        // Convertimos el código ingresado a número para compararlo correctamente
-                        if (parseInt(codigoIngresado) === row.codigo) {
-                            // Crear un contenedor HTML para mostrar un mensaje con el link clickeable
-                            let mensaje = document.createElement("div");
-                            mensaje.innerHTML = `<p>🎁 Tu regalo es: <strong>${row.regalo}</strong></p>
-                                                 <p>🔗 <a href="${row.link}" target="_blank" style="color: blue; text-decoration: underline;">Ver opciones de compra</a></p>`;
-
-                            // Mostrar el mensaje en una ventana emergente
-                            let ventana = window.open("", "Regalo", "width=400,height=250");
-                            ventana.document.body.appendChild(mensaje);
+                        let codigo = prompt("Ingrese su código secreto:");
+                        if (codigo == row.codigo) {
+                            showGift(row.nombre, row.regalo, row.link);
                         } else {
-                            alert("❌ Código incorrecto. Inténtelo de nuevo.");
+                            alert("Código incorrecto. Inténtelo de nuevo.");
                         }
                     };
 
@@ -113,8 +133,20 @@
                     tableBody.appendChild(tr);
                 });
             })
-            .catch(error => console.error("Error al cargar los datos:", error));
+            .catch(error => console.error("Error cargando los datos", error));
+
+        function showGift(nombre, regalo, link) {
+            document.getElementById("giftTitle").textContent = `🎁 ${nombre}, tu regalo es:`;
+            document.getElementById("giftText").textContent = regalo;
+            document.getElementById("giftLink").href = link;
+            document.getElementById("giftBox").style.display = "block";
+        }
+
+        function closeGiftBox() {
+            document.getElementById("giftBox").style.display = "none";
+        }
     </script>
 </body>
 </html>
+
 
